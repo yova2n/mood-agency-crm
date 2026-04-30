@@ -59,7 +59,7 @@ export function RevenueChart({ data }: { data: { month: string; revenue: number 
                   backdropFilter: "blur(12px)",
                 }}
                 labelStyle={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}
-                formatter={(v: number) => [formatEuros(v), "Commission"]}
+                formatter={(v) => [formatEuros(Number(v)), "Commission"]}
               />
               <Bar dataKey="revenue" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
             </BarChart>

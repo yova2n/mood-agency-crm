@@ -33,7 +33,7 @@ export function FollowersChart({ snapshots }: { snapshots: StatsSnapshot[] }) {
               backdropFilter: "blur(12px)",
             }}
             labelStyle={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}
-            formatter={(v: number) => formatNumber(v)}
+            formatter={(v) => formatNumber(Number(v))}
           />
           <Legend wrapperStyle={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }} />
           <Line type="monotone" dataKey="instagram" name="Instagram" stroke="#ff5722" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
