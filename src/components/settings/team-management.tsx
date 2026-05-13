@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, User, Loader2 } from "lucide-react";
+import { Shield, User, Loader2, UserPlus, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, UserRole } from "@/lib/database.types";
@@ -13,6 +16,13 @@ import type { Profile, UserRole } from "@/lib/database.types";
 export function TeamManagement({ profiles, currentUserId }: { profiles: Profile[]; currentUserId: string }) {
   const router = useRouter();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Formulaire d'invitation
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<UserRole>("manager");
+  const [inviting, setInviting] = useState(false);
 
   async function handleRoleChange(p: Profile, role: UserRole) {
     if (p.id === currentUserId) {
@@ -32,14 +42,126 @@ export function TeamManagement({ profiles, currentUserId }: { profiles: Profile[
     router.refresh();
   }
 
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    setInviting(true);
+    try {
+      const res = await fetch("/api/team/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteEmail.trim().toLowerCase(),
+          full_name: inviteName.trim(),
+          role: inviteRole,
+        }),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error ?? "Échec de l'invitation");
+        return;
+      }
+
+      toast.success(`Invitation envoyée à ${inviteEmail}`);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("manager");
+      setInviteOpen(false);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur réseau");
+    } finally {
+      setInviting(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Équipe ({profiles.length})</CardTitle>
-        <CardDescription>
-          Gestion des rôles. Pour inviter un nouveau membre, partage-lui le lien de l&apos;app — il créera son compte via la page de login (rôle Manager par défaut).
-        </CardDescription>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <CardTitle>Équipe ({profiles.length})</CardTitle>
+            <CardDescription>
+              Invite un nouveau membre par email ou gère les rôles existants.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setInviteOpen((v) => !v)}
+            variant={inviteOpen ? "outline" : "default"}
+          >
+            <UserPlus className="w-4 h-4" />
+            {inviteOpen ? "Annuler" : "Inviter un membre"}
+          </Button>
+        </div>
       </CardHeader>
+
+      {inviteOpen && (
+        <form
+          onSubmit={handleInvite}
+          className="mb-4 p-4 rounded-2xl bg-white/[0.02] border border-white/8 space-y-3"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="mb-1.5 block">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                <Input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="prenom@mood-agency.fr"
+                  required
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="mb-1.5 block">Nom complet (optionnel)</Label>
+              <Input
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="Prénom Nom"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
+            <div>
+              <Label className="mb-1.5 block">Rôle</Label>
+              <Select
+                value={inviteRole}
+                onValueChange={(v: UserRole) => setInviteRole(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manager">Manager — pas d&apos;accès aux montants €</SelectItem>
+                  <SelectItem value="admin">Admin — accès total + gestion équipe</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button type="submit" disabled={inviting || !inviteEmail.trim()}>
+              {inviting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Envoyer l&apos;invitation
+                </>
+              )}
+            </Button>
+          </div>
+
+          <p className="text-xs text-white/50">
+            Un email sera envoyé avec un lien pour activer le compte. Le lien expire après 24h.
+          </p>
+        </form>
+      )}
 
       <div className="space-y-2">
         {profiles.map((p) => {
