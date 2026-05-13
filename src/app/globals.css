@@ -91,6 +91,31 @@
     letter-spacing: -0.025em;
     font-weight: 700;
   }
+
+  /* Fix autofill Safari/Chrome — empêche le fond blanc sur les champs auto-remplis */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #2a2320 inset !important;
+    -webkit-text-fill-color: #fafaf9 !important;
+    caret-color: #fafaf9 !important;
+    border-radius: inherit;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Force la couleur du texte tapé dans tous les inputs (même sans autofill) */
+  input,
+  textarea {
+    color: #fafaf9;
+    caret-color: #ff5722;
+  }
 }
 
 @layer utilities {
