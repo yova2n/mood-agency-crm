@@ -62,8 +62,30 @@ export type Brand = {
   secondary_contact_email: string | null;
   secondary_contact_phone: string | null;
   notes: string | null;
+  // Données légales (récupérées via recherche-entreprises.api.gouv.fr)
+  siren: string | null;
+  siret: string | null;
+  legal_form: string | null;
+  naf_code: string | null;
+  naf_label: string | null;
+  address: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// Résultat de recherche d'entreprise (API gouv.fr)
+export type CompanySearchResult = {
+  siren: string;
+  siret: string;
+  name: string;
+  legal_form: string | null;
+  naf_code: string | null;
+  naf_label: string | null;
+  address: string | null;
+  city: string | null;
+  postcode: string | null;
+  active: boolean;
+  date_creation: string | null;
 };
 
 export type Collaboration = {

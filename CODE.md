@@ -215,6 +215,7 @@ Thème **dark warm** (cuivré / coucher de soleil) — pas de mode clair.
 | 2026-04 | Premier compte créé via self-signup : Zakaria Aoun (admin) |
 | 2026-04 | **Système d'invitation depuis l'app** (Paramètres → Équipe) :<br>– Endpoint `/api/team/invite` (admin-only)<br>– Client admin `src/lib/supabase/admin.ts`<br>– Page publique `/auth/setup` (définition du mot de passe après clic email)<br>– Middleware mis à jour pour rendre `/auth/*` public |
 | 2026-04 | Fix autofill (Safari/Chrome forçaient un fond blanc sur les inputs) :<br>– CSS `input:-webkit-autofill` dans `globals.css`<br>– Background solide `bg-[#2a2320]` sur Input/Select/Textarea (au lieu de transparent) |
+| 2026-05 | **Autocomplete entreprises sur la création de marque** :<br>– Migration SQL `supabase/2026-05-brands-company-data.sql` ajoute `siren`, `siret`, `legal_form`, `naf_code`, `naf_label`, `address` à la table `brands`<br>– Endpoint `GET /api/companies/search?q=...` proxifie `recherche-entreprises.api.gouv.fr` (API gratuite, sans clé)<br>– Dropdown de suggestions en temps réel sur le champ "Nom" de `BrandSheet` (debounce 300ms)<br>– Au clic sur une suggestion, tous les champs légaux se remplissent<br>– Lien "Voir sur Pappers" visible dès qu'un SIREN est saisi (BrandSheet + BrandsList) |
 
 ---
 

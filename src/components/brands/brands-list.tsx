@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Mail, Phone, Globe, Pencil, Trash2, Lock, Building2 } from "lucide-react";
+import { Plus, Search, Mail, Phone, Globe, Pencil, Trash2, Lock, Building2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -148,6 +148,19 @@ export function BrandsList({
                     <a href={b.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-white/70 hover:text-orange-300 transition-colors">
                       <Globe className="w-3 h-3 shrink-0" />
                       <span className="truncate">{b.website.replace(/^https?:\/\//, "")}</span>
+                    </a>
+                  )}
+                  {b.siren && (
+                    <a
+                      href={`https://www.pappers.fr/entreprise/${b.siren}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs text-white/70 hover:text-orange-300 transition-colors"
+                      title={[b.legal_form, b.address].filter(Boolean).join(" · ")}
+                    >
+                      <Building2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate">SIREN {b.siren}</span>
+                      <ExternalLink className="w-2.5 h-2.5 opacity-50" />
                     </a>
                   )}
                 </div>
