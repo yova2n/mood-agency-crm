@@ -50,8 +50,8 @@ export function SetupForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 6) {
-      toast.error("Mot de passe : 6 caractères minimum");
+    if (password.length < 8) {
+      toast.error("Mot de passe : 8 caractères minimum");
       return;
     }
     setLoading(true);
@@ -125,7 +125,7 @@ export function SetupForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
-            minLength={6}
+            minLength={8}
             autoComplete="new-password"
             className="pl-10"
           />

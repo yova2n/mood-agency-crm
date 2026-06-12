@@ -39,8 +39,8 @@ export function ProfileSettings({ profile, email }: { profile: Profile | null; e
   }
 
   async function handlePasswordChange() {
-    if (newPassword.length < 6) {
-      toast.error("6 caractères minimum");
+    if (newPassword.length < 8) {
+      toast.error("8 caractères minimum");
       return;
     }
     setPwLoading(true);
@@ -96,7 +96,7 @@ export function ProfileSettings({ profile, email }: { profile: Profile | null; e
         <div className="space-y-4 lg:border-l lg:border-white/8 lg:pl-5">
           <div>
             <h4 className="font-semibold mb-1">Changer le mot de passe</h4>
-            <p className="text-xs text-white/50 mb-3">Au moins 6 caractères</p>
+            <p className="text-xs text-white/50 mb-3">Au moins 8 caractères</p>
             <Label className="mb-1.5 block">Nouveau mot de passe</Label>
             <Input
               type="password"

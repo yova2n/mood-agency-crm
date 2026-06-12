@@ -216,6 +216,7 @@ Thème **dark warm** (cuivré / coucher de soleil) — pas de mode clair.
 | 2026-04 | **Système d'invitation depuis l'app** (Paramètres → Équipe) :<br>– Endpoint `/api/team/invite` (admin-only)<br>– Client admin `src/lib/supabase/admin.ts`<br>– Page publique `/auth/setup` (définition du mot de passe après clic email)<br>– Middleware mis à jour pour rendre `/auth/*` public |
 | 2026-04 | Fix autofill (Safari/Chrome forçaient un fond blanc sur les inputs) :<br>– CSS `input:-webkit-autofill` dans `globals.css`<br>– Background solide `bg-[#2a2320]` sur Input/Select/Textarea (au lieu de transparent) |
 | 2026-05 | **Autocomplete entreprises sur la création de marque** :<br>– Migration SQL `supabase/2026-05-brands-company-data.sql` ajoute `siren`, `siret`, `legal_form`, `naf_code`, `naf_label`, `address` à la table `brands`<br>– Endpoint `GET /api/companies/search?q=...` proxifie `recherche-entreprises.api.gouv.fr` (API gratuite, sans clé)<br>– Dropdown de suggestions en temps réel sur le champ "Nom" de `BrandSheet` (debounce 300ms)<br>– Au clic sur une suggestion, tous les champs légaux se remplissent<br>– Lien "Voir sur Pappers" visible dès qu'un SIREN est saisi (BrandSheet + BrandsList) |
+| 2026-05 | **🔐 Durcissement sécurité complet** (suite alerte CTO) :<br>– **Critique** : suppression des policies RLS `anon read *` qui exposaient toutes les tables via la clé publique. Migration `supabase/2026-05-security-revoke-anon.sql`<br>– `/c/[slug]` passe en server-side avec `createAdminClient()` + validation du slug + filtres stricts (uniquement l'influenceur ciblé et les marques liées à ses collabs)<br>– **Next.js 16.2.4 → 16.2.9** : fix de 5 CVE (SSRF, middleware bypass, cache poisoning)<br>– **Headers HTTP** dans `next.config.ts` : CSP strict (Supabase + API gouv uniquement), HSTS 2 ans, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin, Permissions-Policy<br>– Storage : policies update/delete restreintes au propriétaire de chaque fichier<br>– Mot de passe minimum : 6 → 8 caractères partout (login, signup, setup, profile)<br>– CODE.md section 11 entièrement réécrite : règles intangibles + checklist release + procédure rotation secrets |
 
 ---
 
@@ -237,7 +238,78 @@ git add -A && git commit -m "..." && git push
 
 ---
 
-## 11. Points d'attention pour les futures évolutions
+## 11. 🔐 Sécurité — RÈGLES CRITIQUES
+
+Lire ce bloc à CHAQUE session avant de modifier quoi que ce soit côté auth, DB ou upload.
+
+### Principes intangibles
+
+1. **JAMAIS de policy `to anon ... using (true)`** sur les tables `public.*`. La clé anon est embarquée dans le bundle JS, donc publique. Si une page non-loggée doit lire de la donnée, elle passe par un **endpoint serveur** qui utilise `createAdminClient()` (service_role) avec un filtre strict.
+2. **`SUPABASE_SERVICE_ROLE_KEY` ne quitte JAMAIS le serveur.** Le fichier `src/lib/supabase/admin.ts` commence par `import "server-only"` — toute tentative d'import depuis un composant client casse le build (et c'est volontaire).
+3. **Endpoints sensibles = auth + check de rôle systématique.** Pattern dans `/api/team/invite/route.ts` :
+   1. Récupérer l'utilisateur via le client serveur (cookies).
+   2. Charger son rôle depuis `profiles`.
+   3. Refuser si pas admin.
+4. **Toute nouvelle migration SQL** doit être ajoutée dans `supabase/` avec un nom daté (`AAAA-MM-description.sql`) et listée ci-dessous dans l'historique.
+5. **Aucun secret en clair dans le repo ni dans les conversations partagées.** Les tokens GitHub, clés API, mots de passe ne sont jamais commités. Si un secret est exposé par erreur, le révoquer immédiatement et en générer un nouveau.
+
+### Architecture des couches d'accès
+
+| Surface | Client utilisé | Cas d'usage |
+|---|---|---|
+| Server Component du dashboard | `createClient()` (cookies, anon key) | Tout le contenu protégé par auth Supabase — RLS s'applique |
+| Route Handler avec admin scope | `createAdminClient()` (service_role) | Endpoints API qui font des opérations admin (invite, etc.) |
+| Page publique (`/c/[slug]`, `/auth/setup`) | `createAdminClient()` côté serveur uniquement, ou `createClient()` côté client après hash exchange | JAMAIS de `using (true)` côté RLS — c'est NOTRE serveur qui filtre |
+| Browser interactif (boutons, formulaires) | `createClient()` browser | Pour les actions de l'utilisateur connecté, RLS s'applique |
+
+### Headers HTTP
+
+Définis dans `next.config.ts` (modifier prudemment) :
+- **CSP** strict : `default-src 'self'`, autorise uniquement Supabase + l'API gouv en `connect-src`.
+- **HSTS** : `max-age=63072000; includeSubDomains; preload`
+- **X-Frame-Options: DENY** + `frame-ancestors 'none'` (anti-clickjacking)
+- **X-Content-Type-Options: nosniff**
+- **Referrer-Policy: strict-origin-when-cross-origin**
+- **Permissions-Policy** : camera/micro/geo désactivés par défaut
+
+Si tu ajoutes un domaine tiers (Stripe, Sentry, GA…), il faut explicitement l'ajouter au CSP.
+
+### Checklist à chaque release
+
+- [ ] `npm audit --omit=dev` : aucune vulnérabilité HIGH/CRITICAL non résolue
+- [ ] Pas de policy RLS `to anon` nouvellement créée
+- [ ] Toute nouvelle route `/api/*` qui mute des données vérifie auth + rôle
+- [ ] Tout endpoint qui utilise `createAdminClient()` filtre strictement les données retournées (jamais `select *` sans `eq/in/filter`)
+- [ ] Toute nouvelle dépendance npm est mainstream et maintenue (pas de package abandonné)
+- [ ] Variables d'env Vercel : aucune clé sensible n'a été déplacée vers `NEXT_PUBLIC_*`
+- [ ] Logs : pas de `console.log` qui balance des données utilisateur en prod
+
+### Rotation des secrets
+
+À rotater si exposition (ou tous les 6 mois par hygiène) :
+- **GitHub Personal Access Token** : https://github.com/settings/tokens
+- **Supabase service_role key** : Supabase Dashboard → Settings → API → rotate. Penser à update Vercel + `.env.local`.
+- **Supabase anon key** : si rotatée, la rotation se propage à tous les clients (déconnexion). À faire seulement si compromise.
+
+### Comptes à protéger en priorité
+
+| Compte | 2FA recommandée ? | Critique ? |
+|---|---|---|
+| GitHub (`yova2n`) | OUI | Oui — accès au code, peut déclencher des déploiements |
+| Vercel | OUI | Oui — accès aux env vars de prod |
+| Supabase | OUI | Critique — accès direct à la base de données |
+| Compte email racine (Gmail) | OUI | Critique — reset password de tout le reste |
+
+### Points connus non résolus (acceptés ou à traiter)
+
+- **`postcss` < 8.5.10** (moderate XSS) : non exploitable car postcss tourne au build, jamais avec du contenu user à runtime. Sera résolu au prochain bump mineur de Next.
+- **`ws` (moderate)** : non utilisé directement, dépendance indirecte de dev. Sera résolu via update upstream.
+- **Pas de rate limiting custom** sur les Route Handlers. Supabase rate-limite les appels Auth (sign in/up), Vercel rate-limite les fonctions au niveau plateforme. Pour `/api/team/invite` ça reste à ajouter si abus constaté.
+- **Pas de 2FA app-level** : la connexion Supabase est mot de passe seul. Pour upgrade : activer le MFA TOTP côté Supabase Auth.
+
+---
+
+## 12. Points d'attention pour les futures évolutions
 
 - **`@/lib/supabase/admin.ts` ne doit JAMAIS être importé côté client.** Le `"server-only"` en haut du fichier protège déjà, mais rester vigilant.
 - **Avant tout nouveau champ financier** : penser à appliquer la logique admin/manager (masquage UI + RLS Supabase si nécessaire).
@@ -248,6 +320,6 @@ git add -A && git commit -m "..." && git push
 
 ---
 
-## 12. Contexte business (en bref)
+## 13. Contexte business (en bref)
 
 Ne pas oublier : ce CRM sert à une vraie agence qui veut **du concret**, **du visuel léché**, **zéro friction**. Le ton interne est direct, ambitieux, jamais corporate. Si une décision UI/UX est ambigüe, trancher dans le sens de la simplicité visuelle et de l'efficacité opérationnelle (voir aussi `/Users/yovann/Documents/Claude Code/logiciel-mood-agency/CLAUDE.md` pour le contexte Yovann + écosystème Kainova).
