@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, FileText, Search, Trash2 } from "lucide-react";
+import { Plus, FileText, Search, Trash2, List, History, Send, CheckCircle2, FilePlus2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,18 @@ const STATUS_BADGE: Record<InvoiceStatus, "muted" | "primary" | "success" | "dan
   cancelled: "danger",
 };
 
+type ViewMode = "list" | "history";
+
+type HistoryEvent = {
+  date: string;
+  type: "created" | "sent" | "paid";
+  invoiceId: string;
+  invoiceNumber: string;
+  recipient: string;
+  subject: string | null;
+  amount: number;
+};
+
 export function InvoicesList({
   invoices,
   items,
@@ -37,6 +49,7 @@ export function InvoicesList({
 }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   // Recalcule le total HT effectif depuis les items pour chaque facture
   const totalByInvoice = useMemo(() => {
@@ -75,6 +88,48 @@ export function InvoicesList({
     );
   }, [invoices, search]);
 
+  // Historique : construit la timeline d'événements depuis les timestamps
+  const historyEvents = useMemo(() => {
+    const events: HistoryEvent[] = [];
+    const matchSearch = (inv: Invoice) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        inv.number.toLowerCase().includes(q) ||
+        inv.recipient_name.toLowerCase().includes(q) ||
+        (inv.subject?.toLowerCase().includes(q) ?? false)
+      );
+    };
+    for (const inv of invoices) {
+      if (!matchSearch(inv)) continue;
+      const amount = totalByInvoice.get(inv.id) ?? Number(inv.total_ht);
+      const common = {
+        invoiceId: inv.id,
+        invoiceNumber: inv.number,
+        recipient: inv.recipient_name,
+        subject: inv.subject,
+        amount,
+      };
+      events.push({ ...common, type: "created", date: inv.created_at });
+      if (inv.sent_at) events.push({ ...common, type: "sent", date: inv.sent_at });
+      if (inv.paid_at) events.push({ ...common, type: "paid", date: inv.paid_at });
+    }
+    return events.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  }, [invoices, totalByInvoice, search]);
+
+  // Groupe les events par mois (clé "Mai 2026")
+  const groupedHistory = useMemo(() => {
+    const groups = new Map<string, HistoryEvent[]>();
+    for (const e of historyEvents) {
+      const d = new Date(e.date);
+      const key = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+      const arr = groups.get(key) ?? [];
+      arr.push(e);
+      groups.set(key, arr);
+    }
+    return Array.from(groups.entries());
+  }, [historyEvents]);
+
   async function handleDelete(inv: Invoice) {
     if (!confirm(`Supprimer la facture ${inv.number} ?`)) return;
     const supabase = createClient();
@@ -111,15 +166,44 @@ export function InvoicesList({
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-          <Input
-            placeholder="Rechercher numéro, client, sujet…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-11"
-          />
+        <div className="flex gap-3 items-center flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            <Input
+              placeholder="Rechercher numéro, client, sujet…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-11"
+            />
+          </div>
+
+          {/* Toggle Liste / Historique */}
+          <div className="flex items-center gap-1 glass rounded-full p-1 shrink-0">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1.5 ${
+                viewMode === "list"
+                  ? "gradient-mood text-white shadow-md shadow-orange-600/30"
+                  : "text-white/60 hover:text-white"
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              Liste
+            </button>
+            <button
+              onClick={() => setViewMode("history")}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1.5 ${
+                viewMode === "history"
+                  ? "gradient-mood text-white shadow-md shadow-orange-600/30"
+                  : "text-white/60 hover:text-white"
+              }`}
+            >
+              <History className="w-3.5 h-3.5" />
+              Historique
+            </button>
+          </div>
         </div>
+
         <Link href="/dashboard/facturation/nouvelle">
           <Button>
             <Plus className="w-4 h-4" />
@@ -128,8 +212,72 @@ export function InvoicesList({
         </Link>
       </div>
 
-      {/* Liste */}
-      {filtered.length === 0 ? (
+      {/* Vue Historique */}
+      {viewMode === "history" && (
+        <Card className="!p-0 overflow-hidden">
+          {historyEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <History className="w-12 h-12 mx-auto mb-3 text-white/30" />
+              <p className="text-white/60">Aucun événement à afficher.</p>
+            </div>
+          ) : (
+            <div>
+              {groupedHistory.map(([month, events]) => (
+                <div key={month}>
+                  <div className="px-5 py-3 bg-white/[0.02] border-b border-white/5 sticky top-0 backdrop-blur z-10">
+                    <div className="text-[11px] uppercase tracking-widest text-orange-300 font-bold capitalize">
+                      {month}
+                    </div>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {events.map((e, i) => (
+                      <Link
+                        key={`${e.invoiceId}-${e.type}-${i}`}
+                        href={`/dashboard/facturation/${e.invoiceId}`}
+                        className="flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-colors"
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          e.type === "paid"
+                            ? "bg-green-500/15 text-green-300"
+                            : e.type === "sent"
+                            ? "bg-orange-500/15 text-orange-300"
+                            : "bg-white/5 text-white/60"
+                        }`}>
+                          {e.type === "paid" ? <CheckCircle2 className="w-5 h-5" /> :
+                           e.type === "sent" ? <Send className="w-5 h-5" /> :
+                           <FilePlus2 className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm">
+                            <span className="font-semibold">
+                              {e.type === "paid" ? "Facture payée" :
+                               e.type === "sent" ? "Facture envoyée" :
+                               "Facture créée"}
+                            </span>
+                            <span className="text-white/50"> · {e.invoiceNumber}</span>
+                          </div>
+                          <div className="text-xs text-white/50 truncate mt-0.5">
+                            {e.recipient}{e.subject ? ` — ${e.subject}` : ""}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-sm font-bold">{formatEuros(e.amount)}</div>
+                          <div className="text-[10px] text-white/40">
+                            {new Date(e.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Vue Liste (par défaut) */}
+      {viewMode === "list" && (filtered.length === 0 ? (
         <Card className="text-center py-12">
           <FileText className="w-12 h-12 mx-auto mb-3 text-white/30" />
           <p className="text-white/60">
@@ -194,7 +342,7 @@ export function InvoicesList({
             })}
           </div>
         </Card>
-      )}
+      ))}
     </div>
   );
 }

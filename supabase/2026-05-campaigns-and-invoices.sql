@@ -73,8 +73,8 @@ create table if not exists public.invoices (
   issuer_siret text not null default '93477638600013',
   issuer_vat text not null default 'FR00934776386',
   issuer_email text not null default 'kainovagroup@gmail.com',
-  issuer_iban text,
-  issuer_bic text,
+  issuer_iban text default 'FR76 1695 8000 0158 2552 1837 272',
+  issuer_bic text default 'QNTOFRP1XXX',
 
   -- Destinataire — lié optionnellement à une marque ou saisi à la main
   brand_id uuid references public.brands(id) on delete set null,
@@ -95,7 +95,7 @@ create table if not exists public.invoices (
   subject text,
   description text,
   notes text,
-  payment_terms text default 'Paiement à 30 jours par virement bancaire.',
+  payment_terms text default 'Paiement à 30 jours par virement bancaire. Pour les virements internationaux, BIC intermédiaire : TRWIBEB3XXX.',
 
   created_by uuid references public.profiles(id) on delete set null,
   sent_at timestamptz,

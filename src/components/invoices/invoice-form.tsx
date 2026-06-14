@@ -42,7 +42,12 @@ const DEFAULT_ISSUER = {
   issuer_siret: "93477638600013",
   issuer_vat: "FR00934776386",
   issuer_email: "kainovagroup@gmail.com",
+  issuer_iban: "FR76 1695 8000 0158 2552 1837 272",
+  issuer_bic: "QNTOFRP1XXX",
 };
+
+const DEFAULT_PAYMENT_TERMS =
+  "Paiement à 30 jours par virement bancaire. Pour les virements internationaux, BIC intermédiaire : TRWIBEB3XXX.";
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = {
   draft: "Brouillon",
@@ -89,8 +94,8 @@ export function InvoiceForm({
   const [issuerSiret, setIssuerSiret] = useState(invoice?.issuer_siret ?? DEFAULT_ISSUER.issuer_siret);
   const [issuerVat, setIssuerVat] = useState(invoice?.issuer_vat ?? DEFAULT_ISSUER.issuer_vat);
   const [issuerEmail, setIssuerEmail] = useState(invoice?.issuer_email ?? DEFAULT_ISSUER.issuer_email);
-  const [issuerIban, setIssuerIban] = useState(invoice?.issuer_iban ?? "");
-  const [issuerBic, setIssuerBic] = useState(invoice?.issuer_bic ?? "");
+  const [issuerIban, setIssuerIban] = useState(invoice?.issuer_iban ?? DEFAULT_ISSUER.issuer_iban);
+  const [issuerBic, setIssuerBic] = useState(invoice?.issuer_bic ?? DEFAULT_ISSUER.issuer_bic);
 
   // Destinataire
   const [brandId, setBrandId] = useState<string>(invoice?.brand_id ?? "none");
@@ -105,7 +110,7 @@ export function InvoiceForm({
   const [subject, setSubject] = useState(invoice?.subject ?? "");
   const [description, setDescription] = useState(invoice?.description ?? "");
   const [notes, setNotes] = useState(invoice?.notes ?? "");
-  const [paymentTerms, setPaymentTerms] = useState(invoice?.payment_terms ?? "Paiement à 30 jours par virement bancaire.");
+  const [paymentTerms, setPaymentTerms] = useState(invoice?.payment_terms ?? DEFAULT_PAYMENT_TERMS);
 
   // Items
   const [items, setItems] = useState<ItemDraft[]>(
