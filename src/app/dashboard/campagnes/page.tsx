@@ -41,47 +41,52 @@ export default async function Page() {
           {list.map((inf) => {
             const total = postsCount.get(inf.id) ?? 0;
             return (
-              <Link
-                key={inf.id}
-                href={`/dashboard/campagnes/${inf.slug}`}
-                className="glass glass-hover rounded-3xl p-5 group"
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  {inf.profile_picture_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={inf.profile_picture_url}
-                      alt={inf.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full gradient-mood flex items-center justify-center text-white font-bold">
-                      {inf.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold truncate">{inf.name}</div>
-                    <div className="text-xs text-white/50 mt-0.5">@{inf.slug}</div>
-                  </div>
-                </div>
+              <div key={inf.id} className="glass glass-hover rounded-3xl p-5 group relative">
+                {/* Lien principal vers l'édition campagne (couvre toute la card) */}
+                <Link
+                  href={`/dashboard/campagnes/${inf.slug}`}
+                  className="absolute inset-0 rounded-3xl z-0"
+                  aria-label={`Éditer la campagne de ${inf.name}`}
+                />
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-white/40">Publications</div>
-                    <div className="text-2xl font-extrabold gradient-text">{total}</div>
+                {/* Contenu — pointer-events normal pour que les liens internes restent cliquables */}
+                <div className="relative z-10 pointer-events-none">
+                  <div className="flex items-start gap-3 mb-3">
+                    {inf.profile_picture_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={inf.profile_picture_url}
+                        alt={inf.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full gradient-mood flex items-center justify-center text-white font-bold">
+                        {inf.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold truncate">{inf.name}</div>
+                      <div className="text-xs text-white/50 mt-0.5">@{inf.slug}</div>
+                    </div>
                   </div>
-                  <a
-                    href={`/c/${inf.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-xs text-white/50 hover:text-orange-300 inline-flex items-center gap-1 transition-colors"
-                  >
-                    Voir dashboard public
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-white/40">Publications</div>
+                      <div className="text-2xl font-extrabold gradient-text">{total}</div>
+                    </div>
+                    <a
+                      href={`/c/${inf.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-20 pointer-events-auto text-xs text-white/50 hover:text-orange-300 inline-flex items-center gap-1 transition-colors"
+                    >
+                      Voir dashboard public
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

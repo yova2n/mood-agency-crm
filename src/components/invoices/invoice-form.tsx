@@ -41,7 +41,7 @@ const DEFAULT_ISSUER = {
   issuer_address: "60 rue François 1er, 75008 Paris",
   issuer_siret: "93477638600013",
   issuer_vat: "FR00934776386",
-  issuer_email: "contact@mood-production.com",
+  issuer_email: "kainovagroup@gmail.com",
 };
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = {

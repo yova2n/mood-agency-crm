@@ -72,7 +72,7 @@ create table if not exists public.invoices (
   issuer_address text not null default '60 rue François 1er, 75008 Paris',
   issuer_siret text not null default '93477638600013',
   issuer_vat text not null default 'FR00934776386',
-  issuer_email text not null default 'contact@mood-production.com',
+  issuer_email text not null default 'kainovagroup@gmail.com',
   issuer_iban text,
   issuer_bic text,
 
