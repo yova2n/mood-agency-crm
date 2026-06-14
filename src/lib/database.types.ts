@@ -1,5 +1,5 @@
 export type UserRole = "admin" | "manager";
-export type InfluencerStatus = "actif" | "inactif" | "en_attente";
+export type InfluencerStatus = "signed" | "activable" | "prospect";
 export type Platform = "instagram" | "tiktok" | "youtube";
 export type CollabType = "agence" | "direct";
 export type ApporteurType = "createur" | "agent" | "agence";

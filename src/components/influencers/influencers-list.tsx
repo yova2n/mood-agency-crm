@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { InfluencerSheet } from "@/components/influencers/influencer-sheet";
 import { formatNumber } from "@/lib/utils";
+import { STATUS_LABEL, STATUS_BADGE } from "@/lib/influencer-status";
 import type { Influencer, InfluencerStatus } from "@/lib/database.types";
 
 const STATUSES: { value: InfluencerStatus | "all"; label: string }[] = [
   { value: "all", label: "Tous" },
-  { value: "actif", label: "Actifs" },
-  { value: "inactif", label: "Inactifs" },
-  { value: "en_attente", label: "En attente" },
+  { value: "signed", label: "Signés" },
+  { value: "activable", label: "Activables" },
+  { value: "prospect", label: "Prospects" },
 ];
 
 export function InfluencersList({ initialInfluencers }: { initialInfluencers: Influencer[] }) {
@@ -118,17 +119,8 @@ export function InfluencersList({ initialInfluencers }: { initialInfluencers: In
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-white truncate">{inf.name}</div>
-                      <Badge
-                        variant={
-                          inf.status === "actif"
-                            ? "success"
-                            : inf.status === "inactif"
-                            ? "muted"
-                            : "warning"
-                        }
-                        className="mt-1"
-                      >
-                        {inf.status}
+                      <Badge variant={STATUS_BADGE[inf.status]} className="mt-1">
+                        {STATUS_LABEL[inf.status]}
                       </Badge>
                     </div>
                   </div>

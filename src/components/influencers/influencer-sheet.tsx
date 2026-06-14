@@ -28,7 +28,7 @@ export function InfluencerSheet({ open, onOpenChange, influencer }: Props) {
   const [name, setName] = useState(influencer?.name ?? "");
   const [bio, setBio] = useState(influencer?.bio ?? "");
   const [profilePicture, setProfilePicture] = useState(influencer?.profile_picture_url ?? "");
-  const [status, setStatus] = useState<InfluencerStatus>(influencer?.status ?? "actif");
+  const [status, setStatus] = useState<InfluencerStatus>(influencer?.status ?? "prospect");
   const [tagsInput, setTagsInput] = useState(influencer?.tags?.join(", ") ?? "");
 
   const [igHandle, setIgHandle] = useState(influencer?.instagram_handle ?? "");
@@ -44,7 +44,7 @@ export function InfluencerSheet({ open, onOpenChange, influencer }: Props) {
   const [ytViews, setYtViews] = useState(influencer?.youtube_avg_views?.toString() ?? "");
 
   function reset() {
-    setName(""); setBio(""); setProfilePicture(""); setStatus("actif"); setTagsInput("");
+    setName(""); setBio(""); setProfilePicture(""); setStatus("prospect"); setTagsInput("");
     setIgHandle(""); setIgFollowers(""); setIgEngagement("");
     setTtHandle(""); setTtFollowers(""); setTtEngagement("");
     setYtHandle(""); setYtSubs(""); setYtViews("");
@@ -169,9 +169,9 @@ export function InfluencerSheet({ open, onOpenChange, influencer }: Props) {
                 <Select value={status} onValueChange={(v: InfluencerStatus) => setStatus(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="actif">Actif</SelectItem>
-                    <SelectItem value="inactif">Inactif</SelectItem>
-                    <SelectItem value="en_attente">En attente</SelectItem>
+                    <SelectItem value="signed">Signé — chez Mood Agency</SelectItem>
+                    <SelectItem value="activable">Activable — pas signé mais engageable</SelectItem>
+                    <SelectItem value="prospect">Prospect — à signer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

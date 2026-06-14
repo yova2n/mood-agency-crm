@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  const activeInfluencers = allInfluencers.filter((i) => i.status === "actif").length;
+  const activeInfluencers = allInfluencers.filter((i) => i.status === "signed").length;
   const ongoingCollabs = allCollabs.filter((c) => c.status === "en_cours").length;
   const monthRevenue = allCollabs
     .filter((c) => c.year === currentYear && c.month === currentMonth)

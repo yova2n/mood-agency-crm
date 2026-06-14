@@ -21,7 +21,7 @@ export function KpiGrid({
 }: KpiGridProps) {
   const kpis = [
     {
-      label: "Influenceurs actifs",
+      label: "Créateurs signés",
       value: activeInfluencers.toString(),
       icon: Users,
       glow: "shadow-orange-500/15",

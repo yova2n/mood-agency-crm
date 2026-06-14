@@ -14,6 +14,7 @@ import { InfluencerSheet } from "@/components/influencers/influencer-sheet";
 import { StatsUpdateDialog } from "@/components/influencers/stats-update-dialog";
 import { FollowersChart } from "@/components/influencers/followers-chart";
 import { formatNumber, formatPercent } from "@/lib/utils";
+import { STATUS_LABEL, STATUS_BADGE } from "@/lib/influencer-status";
 import type { Influencer, StatsSnapshot, Collaboration, Brand, Platform } from "@/lib/database.types";
 
 export function InfluencerDetail({
@@ -91,16 +92,8 @@ export function InfluencerDetail({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-3xl font-extrabold tracking-tight">{influencer.name}</h1>
-                <Badge
-                  variant={
-                    influencer.status === "actif"
-                      ? "success"
-                      : influencer.status === "inactif"
-                      ? "muted"
-                      : "warning"
-                  }
-                >
-                  {influencer.status}
+                <Badge variant={STATUS_BADGE[influencer.status]}>
+                  {STATUS_LABEL[influencer.status]}
                 </Badge>
               </div>
               {influencer.bio && <p className="text-white/60 mt-2 max-w-2xl">{influencer.bio}</p>}

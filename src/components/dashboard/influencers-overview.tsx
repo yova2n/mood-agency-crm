@@ -6,6 +6,7 @@ import { Camera, Music2, Play, ArrowRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/utils";
+import { STATUS_LABEL, STATUS_BADGE } from "@/lib/influencer-status";
 import type { Influencer } from "@/lib/database.types";
 
 export function InfluencersOverview({ influencers }: { influencers: Influencer[] }) {
@@ -57,11 +58,8 @@ export function InfluencersOverview({ influencers }: { influencers: Influencer[]
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium truncate">{inf.name}</span>
-                      <Badge
-                        variant={inf.status === "actif" ? "success" : inf.status === "inactif" ? "muted" : "warning"}
-                        className="shrink-0"
-                      >
-                        {inf.status}
+                      <Badge variant={STATUS_BADGE[inf.status]} className="shrink-0">
+                        {STATUS_LABEL[inf.status]}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-white/50">
