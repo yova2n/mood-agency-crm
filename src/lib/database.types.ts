@@ -213,3 +213,48 @@ export type InvoiceItem = {
   sort_order: number;
   created_at: string;
 };
+
+// ===== Tableaux Partenaires (reporting client par campagne) =====
+export type PartnerDashboardStatus = "draft" | "active" | "archived";
+
+export type PartnerDashboard = {
+  id: string;
+  slug: string;
+  name: string;
+  partner_name: string;
+  partner_logo_url: string | null;
+  partner_color: string;
+  agency_name: string;
+  agency_logo_url: string | null;
+  brand_id: string | null;
+  status: PartnerDashboardStatus;
+  period_start: string | null;
+  period_end: string | null;
+  description: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PartnerDashboardPost = {
+  id: string;
+  partner_dashboard_id: string;
+  influencer_id: string | null;
+  platform: PostPlatform;
+  post_url: string | null;
+  posted_at: string;
+  title: string | null;
+  thumbnail_url: string | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  reach: number;
+  impressions: number;
+  engagement_rate: number;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};

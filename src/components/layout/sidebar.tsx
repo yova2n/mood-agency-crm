@@ -15,6 +15,7 @@ import {
   X,
   TrendingUp,
   FileText,
+  Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/influenceurs", label: "Influenceurs", icon: Users },
   { href: "/dashboard/campagnes", label: "Campagnes", icon: TrendingUp },
+  { href: "/dashboard/partenaires", label: "Tableaux partenaires", icon: Megaphone },
   { href: "/dashboard/collaborations", label: "Collaborations", icon: Handshake },
   { href: "/dashboard/marques", label: "Marques", icon: Building2 },
   { href: "/dashboard/facturation", label: "Facturation", icon: FileText },

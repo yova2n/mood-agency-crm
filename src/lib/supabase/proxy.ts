@@ -29,9 +29,10 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname === "/login";
   const isCreatorView = pathname.startsWith("/c/");
+  const isPartnerView = pathname.startsWith("/p/");
   const isAuthFlow = pathname.startsWith("/auth/");
   const isPublicPage =
-    isAuthPage || pathname === "/" || isCreatorView || isAuthFlow;
+    isAuthPage || pathname === "/" || isCreatorView || isPartnerView || isAuthFlow;
 
   // Pas connecté → redirige vers login (sauf pages publiques)
   if (!user && !isPublicPage) {
