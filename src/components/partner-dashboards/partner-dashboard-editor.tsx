@@ -78,6 +78,8 @@ export function PartnerDashboardEditor({
   const [agencyName, setAgencyName] = useState(dashboard?.agency_name ?? "Mood Agency");
   const [agencyLogo, setAgencyLogo] = useState(dashboard?.agency_logo_url ?? "");
   const [brandId, setBrandId] = useState<string>(dashboard?.brand_id ?? "none");
+  const [influencerId, setInfluencerId] = useState<string>(dashboard?.influencer_id ?? "none");
+  const [links, setLinks] = useState(dashboard?.links ?? "");
   const [status, setStatus] = useState<PartnerDashboardStatus>(dashboard?.status ?? "active");
   const [periodStart, setPeriodStart] = useState(dashboard?.period_start ?? "");
   const [periodEnd, setPeriodEnd] = useState(dashboard?.period_end ?? "");
@@ -129,6 +131,8 @@ export function PartnerDashboardEditor({
       agency_name: agencyName.trim() || "Mood Agency",
       agency_logo_url: agencyLogo.trim() || null,
       brand_id: brandId === "none" ? null : brandId,
+      influencer_id: influencerId === "none" ? null : influencerId,
+      links: links.trim() || null,
       status,
       period_start: periodStart || null,
       period_end: periodEnd || null,
@@ -256,6 +260,22 @@ export function PartnerDashboardEditor({
                 </div>
               </div>
 
+              <div>
+                <Label className="mb-1.5 block">Créateur engagé sur la campagne</Label>
+                <Select value={influencerId} onValueChange={setInfluencerId}>
+                  <SelectTrigger><SelectValue placeholder="— Aucun —" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— Aucun —</SelectItem>
+                    {influencers.map((inf) => (
+                      <SelectItem key={inf.id} value={inf.id}>{inf.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-white/40 mt-1">
+                  Le créateur principal de cette campagne — affiché sur le dashboard partenaire.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="mb-1.5 block">Logo du partenaire</Label>
@@ -311,6 +331,19 @@ export function PartnerDashboardEditor({
               <div>
                 <Label className="mb-1.5 block">Description (visible côté partenaire)</Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Campagne de lancement de l'app Bunq sur le marché FR..." />
+              </div>
+
+              <div>
+                <Label className="mb-1.5 block">Liens des posts / liens utiles</Label>
+                <Textarea
+                  value={links}
+                  onChange={(e) => setLinks(e.target.value)}
+                  rows={3}
+                  placeholder={`https://www.instagram.com/p/...\nhttps://www.tiktok.com/@.../video/...\nhttps://drive.google.com/... (brief, assets)`}
+                />
+                <p className="text-[10px] text-white/40 mt-1">
+                  Un lien par ligne — sera affiché en bas du dashboard partenaire.
+                </p>
               </div>
             </div>
           </Card>

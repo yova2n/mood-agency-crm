@@ -227,6 +227,8 @@ export type PartnerDashboard = {
   agency_name: string;
   agency_logo_url: string | null;
   brand_id: string | null;
+  influencer_id: string | null;
+  links: string | null;
   status: PartnerDashboardStatus;
   period_start: string | null;
   period_end: string | null;

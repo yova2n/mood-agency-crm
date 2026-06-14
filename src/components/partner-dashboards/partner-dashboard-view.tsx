@@ -34,6 +34,7 @@ import {
 import { formatNumber } from "@/lib/utils";
 import { PLATFORM_LABEL } from "@/components/campaigns/post-sheet";
 import type {
+  Influencer,
   PartnerDashboard,
   PartnerDashboardPost,
   PostPlatform,
@@ -59,10 +60,17 @@ function groupOf(platform: PostPlatform): string {
 export function PartnerDashboardView({
   dashboard,
   posts,
+  influencer,
 }: {
   dashboard: PartnerDashboard;
   posts: PartnerDashboardPost[];
+  influencer?: Influencer | null;
 }) {
+  // Parse les liens (un par ligne)
+  const externalLinks = (dashboard.links ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
   const [tab, setTab] = useState<string>("overview");
   const [chartMetric, setChartMetric] = useState<"views" | "interactions" | "posts">("views");
 
@@ -230,6 +238,41 @@ export function PartnerDashboardView({
           </div>
         </header>
 
+        {/* Créateur engagé */}
+        {influencer && (
+          <section className="partner-creator-pill">
+            {influencer.profile_picture_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={influencer.profile_picture_url} alt={influencer.name} className="partner-creator-avatar" />
+            ) : (
+              <div className="partner-creator-avatar partner-creator-fallback" style={{ background: accent }}>
+                {influencer.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="partner-creator-label">Créateur engagé sur cette campagne</div>
+              <div className="partner-creator-name">{influencer.name}</div>
+            </div>
+            <div className="partner-creator-handles">
+              {influencer.instagram_handle && (
+                <a href={`https://instagram.com/${influencer.instagram_handle}`} target="_blank" rel="noopener noreferrer" className="partner-creator-handle">
+                  @{influencer.instagram_handle}
+                </a>
+              )}
+              {influencer.tiktok_handle && (
+                <a href={`https://tiktok.com/@${influencer.tiktok_handle}`} target="_blank" rel="noopener noreferrer" className="partner-creator-handle">
+                  TikTok
+                </a>
+              )}
+              {influencer.youtube_handle && (
+                <a href={`https://youtube.com/@${influencer.youtube_handle}`} target="_blank" rel="noopener noreferrer" className="partner-creator-handle">
+                  YouTube
+                </a>
+              )}
+            </div>
+          </section>
+        )}
+
         {tab === "overview" && (
           <>
             {/* KPI row 1 */}
@@ -388,6 +431,36 @@ export function PartnerDashboardView({
           <section className="partner-card text-center py-20 text-gray-400">
             <Calendar className="w-12 h-12 mx-auto mb-3 opacity-40" />
             <p className="text-sm">Calendrier des publications à venir.</p>
+          </section>
+        )}
+
+        {externalLinks.length > 0 && (
+          <section className="partner-card">
+            <h2 className="partner-section-title">Liens des posts & ressources</h2>
+            <div className="partner-links-list">
+              {externalLinks.map((link, i) => {
+                let label = link;
+                try {
+                  const u = new URL(link);
+                  label = u.hostname.replace(/^www\./, "") + u.pathname;
+                  if (label.length > 60) label = label.slice(0, 57) + "…";
+                } catch {
+                  // pas une URL valide, on garde le texte brut
+                }
+                return (
+                  <a
+                    key={i}
+                    href={link.startsWith("http") ? link : `https://${link}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="partner-link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" style={{ color: accent }} />
+                    <span className="truncate">{label}</span>
+                  </a>
+                );
+              })}
+            </div>
           </section>
         )}
 
@@ -560,6 +633,49 @@ export function PartnerDashboardView({
         .partner-posts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         @media (max-width: 1100px) { .partner-posts-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .partner-posts-grid { grid-template-columns: 1fr; } }
+
+        /* Créateur engagé */
+        .partner-creator-pill {
+          display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+          background: white; border-radius: 22px; padding: 14px 20px;
+          box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+          border: 1px solid rgba(0,0,0,0.04);
+          margin-bottom: 20px;
+        }
+        .partner-creator-avatar {
+          width: 48px; height: 48px; border-radius: 50%;
+          object-fit: cover;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .partner-creator-fallback {
+          color: white; font-weight: 800; font-size: 18px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .partner-creator-label {
+          font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+          font-weight: 700; color: #9CA3AF;
+        }
+        .partner-creator-name { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-top: 2px; }
+        .partner-creator-handles { display: flex; gap: 8px; flex-wrap: wrap; }
+        .partner-creator-handle {
+          font-size: 11px; font-weight: 600; color: #4B5563;
+          padding: 6px 12px; border-radius: 999px;
+          background: #F3F4F6; text-decoration: none;
+          transition: background 0.15s;
+        }
+        .partner-creator-handle:hover { background: #E5E7EB; }
+
+        /* Liens externes */
+        .partner-links-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        @media (max-width: 700px) { .partner-links-list { grid-template-columns: 1fr; } }
+        .partner-link {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 14px; border-radius: 12px;
+          background: #F9FAFB; border: 1px solid #F3F4F6;
+          font-size: 12px; color: #4B5563; text-decoration: none;
+          font-weight: 500; transition: all 0.15s;
+        }
+        .partner-link:hover { background: #F3F4F6; color: #111827; }
 
         .partner-footer { text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 32px; }
 
