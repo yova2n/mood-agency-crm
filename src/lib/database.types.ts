@@ -131,3 +131,85 @@ export type CalendarEvent = {
   notes: string | null;
   created_at: string;
 };
+
+// ===== Campagnes — Posts (saisis manuellement par l'équipe) =====
+export type PostPlatform =
+  | "instagram"
+  | "instagram_story"
+  | "instagram_reel"
+  | "tiktok"
+  | "youtube"
+  | "youtube_shorts"
+  | "snapchat"
+  | "twitch"
+  | "linkedin";
+
+export type CampaignPost = {
+  id: string;
+  influencer_id: string;
+  brand_id: string | null;
+  platform: PostPlatform;
+  post_url: string | null;
+  posted_at: string;
+  title: string | null;
+  thumbnail_url: string | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  reach: number;
+  impressions: number;
+  engagement_rate: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+// ===== Facturation =====
+export type InvoiceStatus = "draft" | "sent" | "paid" | "cancelled";
+
+export type Invoice = {
+  id: string;
+  number: string;
+  status: InvoiceStatus;
+  issuer_name: string;
+  issuer_legal_name: string;
+  issuer_address: string;
+  issuer_siret: string;
+  issuer_vat: string;
+  issuer_email: string;
+  issuer_iban: string | null;
+  issuer_bic: string | null;
+  brand_id: string | null;
+  recipient_name: string;
+  recipient_legal_name: string | null;
+  recipient_address: string | null;
+  recipient_siret: string | null;
+  recipient_vat: string | null;
+  recipient_email: string | null;
+  issue_date: string;
+  due_date: string | null;
+  vat_rate: number;
+  total_ht: number;
+  subject: string | null;
+  description: string | null;
+  notes: string | null;
+  payment_terms: string | null;
+  created_by: string | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoiceItem = {
+  id: string;
+  invoice_id: string;
+  description: string;
+  quantity: number;
+  unit_price_ht: number;
+  total_ht: number;
+  sort_order: number;
+  created_at: string;
+};

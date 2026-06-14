@@ -13,6 +13,8 @@ import {
   LogOut,
   Menu,
   X,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -23,8 +25,10 @@ import type { Profile } from "@/lib/database.types";
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/influenceurs", label: "Influenceurs", icon: Users },
+  { href: "/dashboard/campagnes", label: "Campagnes", icon: TrendingUp },
   { href: "/dashboard/collaborations", label: "Collaborations", icon: Handshake },
   { href: "/dashboard/marques", label: "Marques", icon: Building2 },
+  { href: "/dashboard/facturation", label: "Facturation", icon: FileText },
   { href: "/dashboard/calendrier", label: "Calendrier", icon: Calendar },
 ];
 

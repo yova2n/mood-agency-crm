@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CreatorPublicView } from "@/components/creator-public/creator-public-view";
-import type { Brand, Collaboration, Influencer, StatsSnapshot } from "@/lib/database.types";
+import type { Brand, CampaignPost, Collaboration, Influencer, StatsSnapshot } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   if (!influencer) notFound();
 
-  const [{ data: collabs }, { data: snapshots }] = await Promise.all([
+  const [{ data: collabs }, { data: snapshots }, { data: posts }] = await Promise.all([
     admin
       .from("collaborations")
       .select("*")
@@ -45,6 +45,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       .select("*")
       .eq("influencer_id", influencer.id)
       .order("snapshot_date", { ascending: true }),
+    admin
+      .from("campaign_posts")
+      .select("*")
+      .eq("influencer_id", influencer.id)
+      .order("posted_at", { ascending: false }),
   ]);
 
   // On ne fetch QUE les marques liées aux collabs de ce créateur — pas toute la table
@@ -63,6 +68,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       collaborations={(collabs ?? []) as Collaboration[]}
       brands={brands}
       snapshots={(snapshots ?? []) as StatsSnapshot[]}
+      posts={(posts ?? []) as CampaignPost[]}
     />
   );
 }
