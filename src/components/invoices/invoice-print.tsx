@@ -44,6 +44,9 @@ export function InvoicePrint({
   totals,
   notes,
   paymentTerms,
+  phone = "07 49 64 48 19",
+  signatory = "Yovann Pigenet",
+  signatoryRole = "Représentant légal",
 }: {
   number: string;
   status: InvoiceStatus;
@@ -58,6 +61,9 @@ export function InvoicePrint({
   totals: { total_ht: number; vat_amount: number; total_ttc: number };
   notes: string;
   paymentTerms: string;
+  phone?: string;
+  signatory?: string;
+  signatoryRole?: string;
 }) {
   return (
     <div className="invoice-print">
@@ -75,6 +81,8 @@ export function InvoicePrint({
             background: #fff; color: #0a0a0a;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
             padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           .no-print { display: none !important; }
         }
@@ -105,6 +113,7 @@ export function InvoicePrint({
             <div className="ip-party-line">{issuer.address}</div>
             <div className="ip-party-line">SIRET : {issuer.siret}</div>
             <div className="ip-party-line">TVA intracom : {issuer.vat}</div>
+            {phone && <div className="ip-party-line">Tél : {phone}</div>}
             <div className="ip-party-line ip-link">{issuer.email}</div>
           </div>
           <div>
@@ -170,6 +179,28 @@ export function InvoicePrint({
             </p>
           )}
           {notes && <p className="ip-notes">{notes}</p>}
+        </section>
+
+        {/* Signature & cachet — apposés sur chaque facture Kainova Group */}
+        <section className="ip-sign">
+          <div className="ip-sign-place">
+            Fait à Paris, le {new Date(issueDate).toLocaleDateString("fr-FR")}
+          </div>
+          <div className="ip-sign-block">
+            <div className="ip-sign-caption">Signature &amp; cachet</div>
+            <div className="ip-sign-inner">
+              <div className="ip-stamp" aria-hidden>
+                <div className="ip-stamp-name">{issuer.legal_name}</div>
+                <div className="ip-stamp-line">{issuer.address}</div>
+                {phone && <div className="ip-stamp-line">Tél : {phone}</div>}
+                <div className="ip-stamp-line">SIRET : {issuer.siret}</div>
+              </div>
+              <div className="ip-sign-name">{signatory}</div>
+            </div>
+            <div className="ip-sign-role">
+              {signatory} — {signatoryRole}
+            </div>
+          </div>
         </section>
       </div>
 
@@ -324,6 +355,83 @@ export function InvoicePrint({
         .ip-notes {
           margin-top: 12px !important;
           font-style: italic;
+        }
+
+        /* ===== Signature & cachet ===== */
+        .ip-sign {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 32px;
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        .ip-sign-place {
+          font-size: 10px;
+          color: #374151;
+          font-style: italic;
+        }
+        .ip-sign-block {
+          text-align: center;
+          min-width: 270px;
+        }
+        .ip-sign-caption {
+          font-size: 9px;
+          color: #6b7280;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-bottom: 6px;
+        }
+        .ip-sign-inner {
+          position: relative;
+          height: 118px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .ip-stamp {
+          position: relative;
+          display: inline-block;
+          border: 2.5px solid #1e40af;
+          outline: 1px solid #1e40af;
+          outline-offset: 3px;
+          border-radius: 12px;
+          padding: 9px 20px;
+          color: #1e40af;
+          transform: rotate(-7deg);
+          opacity: 0.82;
+          background: transparent;
+        }
+        .ip-stamp-name {
+          font-size: 15px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin-bottom: 3px;
+        }
+        .ip-stamp-line {
+          font-size: 8px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          line-height: 1.55;
+        }
+        .ip-sign-name {
+          position: absolute;
+          right: 6px;
+          bottom: 4px;
+          font-family: "Snell Roundhand", "Segoe Script", "Bradley Hand", "Brush Script MT", cursive;
+          font-size: 32px;
+          line-height: 1;
+          color: #111827;
+          transform: rotate(-5deg);
+        }
+        .ip-sign-role {
+          font-size: 9px;
+          color: #6b7280;
+          margin-top: 6px;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 6px;
         }
       `}</style>
     </div>

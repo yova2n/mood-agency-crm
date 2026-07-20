@@ -12,6 +12,7 @@ import {
   Send,
   CheckCircle2,
   Printer,
+  Stamp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,11 @@ const DEFAULT_ISSUER = {
 
 const DEFAULT_PAYMENT_TERMS =
   "Paiement à 30 jours par virement bancaire. Pour les virements internationaux, BIC intermédiaire : TRWIBEB3XXX.";
+
+// Signature & cachet apposés automatiquement sur chaque facture (constantes société)
+const ISSUER_PHONE = "07 49 64 48 19";
+const ISSUER_SIGNATORY = "Yovann Pigenet";
+const ISSUER_SIGNATORY_ROLE = "Représentant légal";
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = {
   draft: "Brouillon",
@@ -508,6 +514,13 @@ export function InvoiceForm({
           <Card>
             <div className="text-[11px] uppercase tracking-widest text-orange-300 font-bold mb-4">Émetteur</div>
             <p className="text-xs text-white/40 mb-3">Pré-rempli avec les infos Mood Agency / Kainova Group — modifiable.</p>
+            <div className="flex items-start gap-2 rounded-2xl bg-orange-500/10 border border-orange-500/20 px-3 py-2.5 mb-4">
+              <Stamp className="w-4 h-4 text-orange-300 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-orange-100/80 leading-snug">
+                Chaque facture est automatiquement <strong>signée et tamponnée</strong> au nom de{" "}
+                <strong>KAINOVA GROUP — Yovann Pigenet</strong> sur le PDF (tél. {ISSUER_PHONE}).
+              </p>
+            </div>
             <div className="space-y-3">
               <div>
                 <Label className="mb-1.5 block">Nom commercial</Label>
@@ -581,6 +594,9 @@ export function InvoiceForm({
         totals={totals}
         notes={notes}
         paymentTerms={paymentTerms}
+        phone={ISSUER_PHONE}
+        signatory={ISSUER_SIGNATORY}
+        signatoryRole={ISSUER_SIGNATORY_ROLE}
       />
     </div>
   );
