@@ -22,6 +22,19 @@ export function CataloguePrint({
     0
   );
 
+  // Répartition équilibrée des créateurs : plusieurs fiches par page (pas 1/page)
+  const MAX_PER_PAGE = 4;
+  const pageCount = Math.max(1, Math.ceil(influencers.length / MAX_PER_PAGE));
+  const base = Math.floor(influencers.length / pageCount);
+  const extra = influencers.length % pageCount;
+  const pages: Influencer[][] = [];
+  let cursor = 0;
+  for (let p = 0; p < pageCount; p++) {
+    const size = base + (p < extra ? 1 : 0);
+    pages.push(influencers.slice(cursor, cursor + size));
+    cursor += size;
+  }
+
   return (
     <div className="catalogue-print">
       <style>{`
@@ -69,18 +82,20 @@ export function CataloguePrint({
         </div>
       </section>
 
-      {/* FICHES CRÉATEURS (2 par page) */}
-      {influencers.map((inf, idx) => {
-        const total =
-          (inf.instagram_followers || 0) +
-          (inf.tiktok_followers || 0) +
-          (inf.youtube_subscribers || 0);
+      {/* FICHES CRÉATEURS — plusieurs par page */}
+      {pages.map((page, pi) => (
+        <section key={pi} className="cat-sheet">
+          {page.map((inf) => {
+            const total =
+              (inf.instagram_followers || 0) +
+              (inf.tiktok_followers || 0) +
+              (inf.youtube_subscribers || 0);
 
-        return (
-          <section key={inf.id} className={`cat-card ${idx % 2 === 0 ? "cat-card-top" : "cat-card-bottom"}`}>
-            <div className="cat-card-inner">
-              {/* Header */}
-              <div className="cat-card-header">
+            return (
+              <div key={inf.id} className="cat-card">
+                <div className="cat-card-inner">
+                  {/* Header */}
+                  <div className="cat-card-header">
                 {inf.profile_picture_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={inf.profile_picture_url} alt={inf.name} className="cat-avatar" />
@@ -136,11 +151,13 @@ export function CataloguePrint({
                     color="#FF0000"
                   />
                 )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </section>
-        );
-      })}
+            );
+          })}
+        </section>
+      ))}
 
       {/* DOS DE COUVERTURE */}
       <section className="cat-back">
@@ -195,29 +212,30 @@ export function CataloguePrint({
           border-top: 1px solid rgba(255,255,255,0.25); padding-top: 16px;
         }
 
-        /* ===== FICHES CRÉATEURS — 2 par page ===== */
-        .cat-card {
-          width: 210mm; height: 148.5mm;
-          padding: 12mm 14mm;
+        /* ===== FICHES CRÉATEURS — plusieurs par page ===== */
+        .cat-sheet {
+          width: 210mm; height: 297mm;
           box-sizing: border-box;
+          padding: 14mm;
           background: white;
+          display: flex; flex-direction: column;
+          justify-content: space-evenly;
+          gap: 8mm;
+          overflow: hidden;
+          page-break-before: always;
           page-break-inside: avoid;
         }
-        .cat-card-bottom {
-          border-top: 1px dashed #E5E7EB;
-          page-break-after: always;
+        .cat-card {
+          page-break-inside: avoid;
+          break-inside: avoid;
         }
-        .cat-card-bottom:last-child { page-break-after: auto; }
-        .cat-card-top:not(:first-of-type) { page-break-before: always; }
-
         .cat-card-inner {
-          height: 100%;
           display: flex; flex-direction: column;
-          gap: 12px;
-          border: 1px solid #F3F4F6;
+          gap: 10px;
+          border: 1px solid #EFF0F2;
           border-radius: 16px;
-          padding: 16px;
-          background: linear-gradient(135deg, rgba(255,138,61,0.04) 0%, rgba(244,63,94,0.02) 100%);
+          padding: 15px 18px;
+          background: linear-gradient(135deg, rgba(255,138,61,0.05) 0%, rgba(244,63,94,0.03) 100%);
         }
 
         .cat-card-header {
@@ -246,7 +264,10 @@ export function CataloguePrint({
           font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
           color: #EA580C; background: #FFF4E5; padding: 2px 8px; border-radius: 999px;
         }
-        .cat-card-bio { font-size: 11px; color: #6B7280; margin-top: 6px; line-height: 1.5; }
+        .cat-card-bio {
+          font-size: 11px; color: #6B7280; margin-top: 6px; line-height: 1.5;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
         .cat-card-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
         .cat-tag {
           font-size: 9px; padding: 2px 7px; border-radius: 999px;
